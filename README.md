@@ -1,4 +1,5 @@
 🧠 Brain Tumor Diagnostic Assistant with Explainable AI (XAI)
+
 📌 Project Overview
 This repository contains a complete, end-to-end deep learning pipeline for multi-class brain tumor classification using MRI scans. Built as a Master's level research project, it categorizes scans into four classes: Glioma, Meningioma, Pituitary, and No Tumor.
 
@@ -35,8 +36,17 @@ Healthy Brain Detection: 100% Sensitivity (0 False Positives for 'No Tumor')
 
 Focal Loss Success: Misclassification between Glioma and Meningioma was reduced by over 70% compared to the baseline cross-entropy model.
 
+📦 Model Weights
+Due to GitHub file size limitations, the trained model is hosted externally.
+
+👉 Download Model: [https://drive.google.com/drive/folders/1phkCm78u090s7Otrjy2rOxgp5S9VpyNd?usp=drive_link](https://drive.google.com/drive/folders/1phkCm78u090s7Otrjy2rOxgp5S9VpyNd?usp=drive_link)
+
+After downloading, place the model file inside:
+
+saved_models/
+
 📂 Repository Structure
-Plaintext
+
 ├── app/
 │   └── app.py                        # Streamlit web application frontend
 ├── datasets/
@@ -49,45 +59,44 @@ Plaintext
 │   ├── 04_model_training_advanced.ipynb  # DenseNet121 + Focal Loss fine-tuning
 │   └── 05_evaluation_and_xai.ipynb       # Confusion matrices and Grad-CAM generation
 ├── saved_models/
-│   └── advanced_densenet.keras       # The trained model weights (generated after training)
+│   └── advanced_densenet.keras       # Place downloaded model here
 ├── src/
-│   ├── __init__.py                   
+│   ├── **init**.py
 │   ├── data_loader.py                # Reusable OpenCV cropping functions
 │   ├── metrics.py                    # Grad-CAM heatmap generation logic
 │   └── model.py                      # Model loading utilities
 └── README.md                         # Project documentation
+
 ⚙️ Installation & Setup
+
 1. Clone the repository
 
-Bash
-git clone https://github.com/yourusername/brain-tumor-detection.git
+git clone [https://github.com/yourusername/brain-tumor-detection.git](https://github.com/yourusername/brain-tumor-detection.git)
 cd brain-tumor-detection
+
 2. Create a virtual environment
 
-Bash
 conda create -n brain_env python=3.9
 conda activate brain_env
+
 3. Install dependencies
 
-Bash
 pip install tensorflow opencv-python numpy pandas matplotlib seaborn scikit-learn streamlit pillow
+
 💻 How to Run the Project
+
 Option A: Run the Deep Learning Pipeline (Notebooks)
-To train the model from scratch or process new data, execute the Jupyter Notebooks in order sequentially from 01 to 05. Ensure your raw images are placed in the datasets/01_raw/Training and datasets/01_raw/Testing folders with the four subdirectories (glioma, meningioma, no_tumor, pituitary).
+Execute notebooks sequentially from 01 to 05.
 
 Option B: Run the Web Application
-If the model is already trained and saved in saved_models/, you can launch the diagnostic interface:
 
-Bash
-# Navigate to the root folder of the project
-cd brain-tumor-detection
-
-# Run the Streamlit app
 streamlit run app/app.py
-The application will open automatically in your local web browser at http://localhost:8501.
+
+App runs at: [http://localhost:8501](http://localhost:8501)
 
 🔬 Future Work
-While the 2D slice classification achieved highly robust results, future iterations of this project will aim to utilize 3D volumetric data (NIfTI files) with a 3D-CNN architecture. This will provide deeper spatial context, specifically aiming to drive the False Negative rate for challenging meningioma borders down to absolute zero.
+Move from 2D MRI slices to 3D volumetric (NIfTI) data using 3D CNNs.
 
-*** ### Note to Evaluators
-This repository represents the practical implementation of my Master's thesis research. For detailed methodology, literature review, and clinical justification of hyperparameter choices (such as restricted augmentation and Focal Loss), please refer to the accompanying written thesis document.
+### Note to Evaluators
+
+This repository represents the practical implementation of my Master's thesis research. For detailed methodology, refer to the thesis document.
