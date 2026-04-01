@@ -33,11 +33,15 @@ def get_model():
         with st.spinner("Downloading model from Google Drive (127MB)... This only happens once."):
             file_id = '1phkCm78u090s7Otrjy2rOxgp5S9VpyNd'
             url = f'https://drive.google.com/uc?export=download&id={file_id}'
-            try:
-                gdown.download(url, MODEL_PATH, quiet=False)
-            except Exception as e:
-                st.error(f"Download failed: {e}")
-                st.stop()
+            # Replace the gdown line in app/app.py with this:
+    try:
+        # 'fuzzy=True' helps gdown find the file even if the URL is redirected by Google's virus scanner
+         gdown.download(url, MODEL_PATH, quiet=False, fuzzy=True)
+    except Exception as e:
+          st.error("Google Drive is blocking the automated download. Trying alternative...")
+          # Alternative: Use a direct download link that bypasses the warning page
+          confirm_url = f"https://drive.google.com/uc?export=download&confirm=t&id={file_id}"
+          gdown.download(confirm_url, MODEL_PATH, quiet=False)
     
     return load_trained_model(MODEL_PATH)
 
