@@ -1,4 +1,3 @@
-# src/data_loader.py
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -25,7 +24,7 @@ def crop_brain_contour(image):
     extTop = tuple(c[c[:, :, 1].argmin()][0])
     extBot = tuple(c[c[:, :, 1].argmax()][0])
     
-    buffer = 5
+    buffer = 15 # Increased buffer to protect tumor edges
     new_image = image[
         max(0, extTop[1] - buffer) : min(image.shape[0], extBot[1] + buffer),
         max(0, extLeft[0] - buffer) : min(image.shape[1], extRight[0] + buffer)
@@ -34,11 +33,9 @@ def crop_brain_contour(image):
 
 def preprocess_image_for_inference(image, target_size=(224, 224)):
     """Prepares a single image array for the neural network."""
-    # 1. Crop the image
     cropped_img = crop_brain_contour(image)
-    # 2. Resize
     resized_img = cv2.resize(cropped_img, target_size, interpolation=cv2.INTER_CUBIC)
-    # 3. Convert to array and add batch dimension (1, 224, 224, 3)
+    
     img_array = tf.keras.utils.img_to_array(resized_img)
     img_array = np.expand_dims(img_array, axis=0)
     
