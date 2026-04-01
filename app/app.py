@@ -6,12 +6,26 @@ import cv2
 import streamlit as st
 from PIL import Image
 
-# --- PATH CONFIGURATION ---
-# Adds the root directory to sys.path so 'src' can be found
-current_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.abspath(os.path.join(current_dir, '..'))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+# --- CLOUD-SAFE PATH CONFIGURATION ---
+# Instead of saving in the project folder, we use the system's temporary directory
+MODEL_DIR = "/tmp/saved_models"
+MODEL_PATH = os.path.join(MODEL_DIR, 'advanced_densenet.keras')
+
+# Create the temp folder if it doesn't exist (this is allowed in /tmp)
+if not os.path.exists(MODEL_DIR):
+    os.makedirs(MODEL_DIR, exist_ok=True)
+
+@st.cache_resource
+def get_model():
+    if not os.path.exists(MODEL_PATH):
+        with st.spinner("Downloading model from Google Drive..."):
+            file_id = '1phkCm78u090s7Otrjy2rOxgp5S9VpyNd'
+            url = f'https://drive.google.com/uc?export=download&id={file_id}'
+            # Download directly to the /tmp path
+            gdown.download(url, MODEL_PATH, quiet=False)
+    
+    from src.model import load_trained_model
+    return load_trained_model(MODEL_PATH)
 
 from src.model import load_trained_model
 from src.data_loader import preprocess_image_for_inference
