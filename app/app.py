@@ -1,13 +1,12 @@
 import sys
 import os
-import gdown
 import numpy as np
 import cv2
 import streamlit as st
+import tensorflow as tf
 from PIL import Image
 
 # --- 1. SYSTEM PATH SETUP ---
-# This allows the app to find your 'src' folder
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, '..'))
 if root_dir not in sys.path:
@@ -18,34 +17,22 @@ from src.model import load_trained_model
 from src.data_loader import preprocess_image_for_inference
 from src.metrics import make_gradcam_heatmap, generate_gradcam_overlay
 
-# --- 2. CLOUD-SAFE PATH CONFIGURATION ---
-# Use /tmp to avoid permission errors on Streamlit Cloud
-MODEL_DIR = "/tmp/saved_models"
-MODEL_PATH = os.path.join(MODEL_DIR, 'advanced_densenet.keras')
-
-# Create the temp folder if it doesn't exist
-os.makedirs(MODEL_DIR, exist_ok=True)
-
-# --- 3. MODEL DOWNLOAD & LOAD LOGIC ---
+# --- 2. FAIL-PROOF MODEL DOWNLOADER ---
 @st.cache_resource
 def get_model():
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("Downloading model from Google Drive (127MB)... This only happens once."):
-            file_id = '1phkCm78u090s7Otrjy2rOxgp5S9VpyNd'
-            url = f'https://drive.google.com/uc?export=download&id={file_id}'
-            # Replace the gdown line in app/app.py with this:
-    try:
-        # 'fuzzy=True' helps gdown find the file even if the URL is redirected by Google's virus scanner
-         gdown.download(url, MODEL_PATH, quiet=False, fuzzy=True)
-    except Exception as e:
-          st.error("Google Drive is blocking the automated download. Trying alternative...")
-          # Alternative: Use a direct download link that bypasses the warning page
-          confirm_url = f"https://drive.google.com/uc?export=download&confirm=t&id={file_id}"
-          gdown.download(confirm_url, MODEL_PATH, quiet=False)
+    # REPLACE THIS with the link you copied from GitHub Releases in Step 1!
+    model_url = "https://github.com/222000rohitkumar/brain_tumor_detection/releases/download/v1.0/advanced_densenet.kera"
     
-    return load_trained_model(MODEL_PATH)
+    with st.spinner("Downloading AI Model... This only happens on the first run."):
+        # tf.keras.utils.get_file handles the /tmp folder and downloading safely!
+        model_path = tf.keras.utils.get_file(
+            "advanced_densenet.keras",
+            origin=model_url
+        )
+        
+    return load_trained_model(model_path)
 
-# --- 4. APP UI SETUP ---
+# --- 3. APP UI SETUP ---
 st.set_page_config(page_title="Brain Tumor AI", layout="wide")
 st.title("🧠 Brain Tumor Diagnostic Assistant with Explainable AI")
 
@@ -61,11 +48,10 @@ except Exception as e:
     st.error(f"Failed to load model: {e}")
     st.stop()
 
-# --- 5. IMAGE PROCESSING ---
+# --- 4. IMAGE PROCESSING ---
 uploaded_file = st.file_uploader("Upload MRI Scan", type=["jpg", "png", "jpeg"])
 
 if uploaded_file:
-    # Convert uploaded file to OpenCV format
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     img = cv2.imdecode(file_bytes, 1)
     
@@ -96,3 +82,16 @@ if uploaded_file:
         st.image(overlay, caption="Grad-CAM Explainability", use_container_width=True)
 
     st.success(f"**Diagnosis:** {label} | **Confidence:** {conf:.2f}%")
+
+    # --- 5. EXPLAINABLE AI SECTION ---
+    st.markdown("---")
+    with st.expander("🔍 How did the AI make this decision? (Explainable AI)"):
+        st.write("""
+        This diagnostic tool uses **Grad-CAM** (Gradient-weighted Class Activation Mapping) to provide transparency into the neural network's decision-making process.
+        
+        Instead of acting as a 'black box', the AI generates a heatmap over the original MRI scan:
+        * 🔴 **Red/Yellow Regions:** High importance. These are the specific biological textures and shapes the AI heavily relied on to make its diagnosis.
+        * 🔵 **Blue Regions:** Low importance. The AI ignored these areas.
+        
+        **Clinical Value:** This Explainable AI feature allows radiologists to verify that the model is looking at the actual tumor site rather than image artifacts (like skull markers or text).
+        """)
